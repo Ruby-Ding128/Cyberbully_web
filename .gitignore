@@ -1,0 +1,91 @@
+# ============ 模型权重文件 ============
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.pb
+*.onnx
+*.bin
+*.pickle
+*.pkl
+
+# ============ 训练输出 ============
+outputs/
+checkpoints/
+runs/
+logs/
+saved_models/
+models/
+*.log
+
+# ============ 数据文件 ============
+*.csv
+*.xlsx
+*.xls
+*.json
+*.jsonl
+*.parquet
+*.arrow
+*.db
+*.sqlite
+*.sqlite3
+
+# ============ 数据集 ============
+data/
+datasets/
+train/
+test/
+val/
+
+# ============ 图片/视频 ============
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.mp4
+*.avi
+*.mov
+
+# ============ Python 相关 ============
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# ============ Jupyter Notebook ============
+.ipynb_checkpoints/
+*.ipynb
+
+# ============ IDE ============
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ============ 环境变量 ============
+.env
+.env.local
+.env.*.local
+
+# ============ 其他 ============
+*.tmp
+*.temp
+*.bak
+*.backup

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>网络欺凌识别与干预</title>
+  <style>
+    :root{color-scheme:light;--ink:#17324d;--teal:#168c8c;--paper:#f4f7fa;--muted:#64748b;--danger:#9f2d2d}*{box-sizing:border-box}
+    body{margin:0;font:16px/1.6 system-ui,"Microsoft YaHei",sans-serif;color:var(--ink);background:var(--paper)}main{max-width:920px;margin:36px auto;padding:0 18px}
+    .card{background:#fff;border-radius:16px;padding:24px;margin-bottom:18px;box-shadow:0 8px 28px #17324d14}.hidden{display:none!important}.auth-card{max-width:480px;margin:70px auto}
+    .tabs{display:flex;gap:8px;margin:18px 0;padding:4px;border-radius:10px;background:#edf3f6}.tab{flex:1;margin:0;background:transparent;color:var(--muted)}.tab.active{background:#fff;color:var(--teal);box-shadow:0 2px 8px #17324d18}
+    label{display:block;margin:12px 0 5px;font-weight:600}input,textarea{width:100%;padding:12px 14px;border:1px solid #cad6df;border-radius:10px;font:inherit}textarea{min-height:130px}
+    button{margin-top:12px;padding:10px 20px;border:0;border-radius:9px;background:var(--teal);color:#fff;font-weight:700;cursor:pointer}button:disabled{opacity:.55;cursor:wait}.error{min-height:24px;color:var(--danger)}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px}.user{color:var(--muted)}.logout{background:#e8eef3;color:var(--ink);margin:0}.result-text{padding:16px;border-radius:10px;background:#f8fafc;white-space:pre-wrap}
+    mark.cyber-highlight{padding:2px 4px;border-radius:4px;background:#ffe58f}mark.severity-high{background:#ffb4b4}mark.severity-medium{background:#ffd79a}.tag{display:inline-block;margin:3px;padding:3px 9px;border-radius:999px;color:#fff;background:var(--teal)}
+    .viz-meta{margin:0 0 10px;color:var(--muted);font-size:14px}.viz-empty{border-left:4px solid #e88c30;padding-left:12px;color:#8a5316}.warning{color:var(--danger);font-weight:700}pre{overflow:auto;background:#12283d;color:#dff7f5;padding:14px;border-radius:10px}
+  </style>
+</head>
+<body><main>
+  <section id="auth-view" class="card auth-card">
+    <h1>欢迎使用</h1><p>登录后使用网络欺凌识别与干预服务。</p>
+    <div class="tabs"><button id="login-tab" class="tab active" type="button">登录</button><button id="register-tab" class="tab" type="button">注册</button></div>
+    <form id="login-form">
+      <label for="login-account">用户名或邮箱</label><input id="login-account" autocomplete="username" required minlength="3">
+      <label for="login-password">密码</label><input id="login-password" type="password" autocomplete="current-password" required minlength="8"><button type="submit">登录</button>
+    </form>
+    <form id="register-form" class="hidden">
+      <label for="register-username">用户名</label><input id="register-username" autocomplete="username" required minlength="3" maxlength="30" pattern="[A-Za-z0-9_\-]+">
+      <label for="register-email">邮箱</label><input id="register-email" type="email" autocomplete="email" required>
+      <label for="register-password">密码（至少 8 位）</label><input id="register-password" type="password" autocomplete="new-password" required minlength="8"><button type="submit">注册并登录</button>
+    </form><p id="auth-error" class="error" role="alert"></p>
+  </section>
+  <div id="app-view" class="hidden">
+    <section class="card topbar"><div><strong>网络欺凌识别与干预</strong><div id="current-user" class="user"></div></div><button id="logout" class="logout">退出登录</button></section>
+    <section class="card"><h1>文本分析</h1><p>系统将判断欺凌类型、高亮关键片段，并生成适合青少年的干预提醒。</p><textarea id="text" placeholder="请输入需要分析的句子……"></textarea><button id="analyze">开始分析</button></section>
+    <section id="result" class="card hidden"><h2>识别结果</h2><p id="decision"></p><div id="types"></div><h3>关键词可视化</h3><p id="viz-meta" class="viz-meta"></p><div id="annotated" class="result-text"></div><h3>干预提醒</h3><p id="intervention"></p><details><summary>查看完整 API 返回</summary><pre id="raw"></pre></details></section>
+  </div>
+</main><script>
+const TOKEN_KEY='cyberbullying_access_token',authView=document.querySelector('#auth-view'),appView=document.querySelector('#app-view'),authError=document.querySelector('#auth-error'),loginForm=document.querySelector('#login-form'),registerForm=document.querySelector('#register-form');
+const token=()=>localStorage.getItem(TOKEN_KEY);
+function showTab(name){const login=name==='login';loginForm.classList.toggle('hidden',!login);registerForm.classList.toggle('hidden',login);document.querySelector('#login-tab').classList.toggle('active',login);document.querySelector('#register-tab').classList.toggle('active',!login);authError.textContent=''}
+function showAuth(){authView.classList.remove('hidden');appView.classList.add('hidden');document.querySelector('#result').classList.add('hidden')}
+function showApp(user){authView.classList.add('hidden');appView.classList.remove('hidden');document.querySelector('#current-user').textContent=`${user.username} · ${user.email}`}
+async function api(path,options={}){const headers={'Content-Type':'application/json',...(options.headers||{})};if(token())headers.Authorization=`Bearer ${token()}`;const response=await fetch(path,{...options,headers}),data=await response.json().catch(()=>({detail:'请求失败'}));if(response.status===401&&!path.endsWith('/login')){localStorage.removeItem(TOKEN_KEY);showAuth()}if(!response.ok)throw new Error(typeof data.detail==='string'?data.detail:'请求参数不正确');return data}
+async function acceptAuth(path,body){authError.textContent='';try{const data=await api(path,{method:'POST',body:JSON.stringify(body)});localStorage.setItem(TOKEN_KEY,data.access_token);showApp(data.user)}catch(error){authError.textContent=error.message}}
+document.querySelector('#login-tab').onclick=()=>showTab('login');document.querySelector('#register-tab').onclick=()=>showTab('register');
+loginForm.onsubmit=e=>{e.preventDefault();acceptAuth('/api/v1/auth/login',{account:document.querySelector('#login-account').value,password:document.querySelector('#login-password').value})};
+registerForm.onsubmit=e=>{e.preventDefault();acceptAuth('/api/v1/auth/register',{username:document.querySelector('#register-username').value,email:document.querySelector('#register-email').value,password:document.querySelector('#register-password').value})};
+document.querySelector('#logout').onclick=()=>{localStorage.removeItem(TOKEN_KEY);showAuth()};
+const button=document.querySelector('#analyze');button.onclick=async()=>{const text=document.querySelector('#text').value.trim();if(!text)return;button.disabled=true;button.textContent='分析中…';try{const data=await api('/api/v1/analyze',{method:'POST',body:JSON.stringify({text})});document.querySelector('#result').classList.remove('hidden');document.querySelector('#decision').innerHTML=data.classification.is_cyberbullying?'<span class="warning">检测到网络欺凌</span>':'未检测到明显网络欺凌';document.querySelector('#types').innerHTML=data.classification.detected_types_zh.map(x=>`<span class="tag">${x}</span>`).join('');const count=data.llm.highlights.length,provider={llm:'LLM 分析',fallback:'备用规则',skipped:'未触发分析'}[data.llm.provider]||data.llm.provider;document.querySelector('#viz-meta').textContent=`${provider} · 高亮 ${count} 个关键片段${count?'':' · 本次没有提取到可定位的关键词'}`;const annotated=document.querySelector('#annotated');annotated.innerHTML=data.annotated_html;annotated.classList.toggle('viz-empty',count===0);document.querySelector('#intervention').textContent=data.llm.intervention;document.querySelector('#raw').textContent=JSON.stringify(data,null,2)}catch(error){alert(error.message)}finally{button.disabled=false;button.textContent='开始分析'}};
+(async()=>{if(!token())return showAuth();try{showApp(await api('/api/v1/auth/me'))}catch{showAuth()}})();
+</script></body></html>

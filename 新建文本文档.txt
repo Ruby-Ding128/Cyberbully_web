@@ -1,0 +1,24 @@
+标签
+severe_toxicity：严重毒性攻击
+obscene：粗俗或淫秽内容
+identity_attack：身份攻击
+insult：侮辱
+threat：威胁
+sexual_explicit：露骨色情内容
+age：年龄歧视或年龄欺凌
+ethnicity：种族或族裔欺凌
+gender：性别相关欺凌
+religion：宗教相关欺凌
+
+
+1. 网络用语欺凌识别
+2. 网站 
+功能
+1. 对整个句子判断是否是网络欺凌 如果是，则属于哪种类型
+2. 基于llm 把涉及网络欺凌的关键字词标记出来，并可视化
+3. 其次llm 生成温和有效适合青少年的干预提醒  --- 如何设计prompt 
+4. 后端使用fastapi 来实现
+5. 前端html
+
+登录注册 
+
